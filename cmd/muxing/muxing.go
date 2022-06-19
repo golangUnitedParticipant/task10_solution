@@ -44,11 +44,25 @@ func handleDataGet(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Good! no body sent"))
 }
 
+func handleHeaders(w http.ResponseWriter, r *http.Request) {
+	a, err := strconv.Atoi(r.Header.Get("a"))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+	b, err := strconv.Atoi(r.Header.Get("b"))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+	w.Header().Add("a+b", strconv.FormatInt(int64(a+b), 10))
+	w.Write([]byte("Good! no body sent"))
+}
+
 func Start(host string, port int) {
 	router := mux.NewRouter()
 	router.HandleFunc("/name/{name}", handleName).Methods(http.MethodGet)
 	router.HandleFunc("/bad", handleBad).Methods(http.MethodGet)
 	router.HandleFunc("/data", handleDataPost).Methods(http.MethodPost)
+	router.HandleFunc("/headers", handleHeaders).Methods(http.MethodPost)
 	router.HandleFunc("/data", handleDataGet).Methods(http.MethodGet)
 	log.Println(fmt.Printf("Starting API server on %s:%d\n", host, port))
 	if err := http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), router); err != nil {
